@@ -1,13 +1,15 @@
 #!/usr/bin/ruby
 require 'docker'
 require 'rest-client'
-require 'websocket-client-simple'
-require 'mqtt'
+require './web_socket_data_stream'
+require './polling_http_data_stream'
 
 if ARGV.size == 0
   puts 'Not enough arguments'
   exit -1
 end
+
+runners = {websocket: WebSocketDataStream, http_poll: PollingHTTPDataStream}
 
 if ARGV[0] == 'register'
   if ARGV.size < 2
@@ -23,9 +25,10 @@ if ARGV[0] == 'register'
   container.start
 elsif ARGV[0] == 'run'
   bootstrap_uri = "#{ENV['BOOTSTRAP_URI']}?token=#{ENV['ACCESS_TOKEN']}"
-  bootstrap = JSON.parse(RestClient.get(bootstrap_uri, {format: :json}))
+  bootstrap = JSON.parse(RestClient.get(bootstrap_uri, {format: :json, authorization: "Bearer #{ENV['ACCESS_TOKEN']}"}))
   puts bootstrap.inspect
 
-
-  Kernel.sleep
+  class_type = runners[bootstrap['transport'].to_sym]
+  inst = class_type.new bootstrap
+  inst.execute
 end

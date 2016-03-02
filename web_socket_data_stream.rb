@@ -1,3 +1,6 @@
+require 'websocket-client-simple'
+require 'mqtt'
+
 class WebSocketDataStream
   def initialize(bootstrap_info)
     @endpoint = bootstrap_info['endpoint']
@@ -10,6 +13,7 @@ class WebSocketDataStream
     end
 
     ws.on :open do
+      puts 'WebSocket connected'
       pkt = MQTT::Packet::Publish.new topic: 'test', payload: 'Test'
       ws.send pkt.to_s
     end
