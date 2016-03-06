@@ -12,14 +12,20 @@ class PollingHTTPDataStream
       puts 'Requesting'
       json = JSON.parse(get_request(@endpoints['sync']))
 
+      report = {}
       json['services'].each do |service|
         valid = certificate_valid?(service)
+        cert_report = {}
+        cert_report['changed'] = !valid
         unless valid
           chain = get_request(service['url'])
           save_certificate(service, chain)
           post_rotation(service)
         end
+        report[service['id']] = cert_report
       end
+
+      post_request(@endpoints['report'], report)
 
       refresh_rate = json['continuation']['refresh']
       Kernel.sleep refresh_rate.to_i
@@ -52,7 +58,7 @@ class PollingHTTPDataStream
         if action.has_key? 'signal'
           container.kill!(Signal: action['signal'])
         else
-          container.restart!
+          #container.restart!
         end
       end
     end
@@ -60,5 +66,9 @@ class PollingHTTPDataStream
 
   def get_request(url)
     RestClient.get(ENV['MASTER_URI'] + url, {authorization: "Bearer #{@key}"})
+  end
+
+  def post_request(url, body)
+    RestClient.post(ENV['MASTER_URI'] + url, body.to_json, {authorization: "Bearer #{@key}", content_type: :json})
   end
 end
