@@ -9,6 +9,7 @@ if ARGV.size == 0
   exit -1
 end
 
+Docker.url = 'http://docker.devvm'
 runners = {websocket: WebSocketDataStream, http_poll: PollingHTTPDataStream}
 
 if ARGV[0] == 'register'
@@ -17,7 +18,6 @@ if ARGV[0] == 'register'
     exit -1
   end
 
-  Docker.url = 'http://docker.devvm'
   blob = JSON.parse(RestClient.get(ARGV[1]))
 
   env = %W(ACCESS_TOKEN=#{blob['access_token']} MASTER_URI=http://certmgr.devvm)
