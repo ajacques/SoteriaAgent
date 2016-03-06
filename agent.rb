@@ -20,11 +20,11 @@ if ARGV[0] == 'register'
   Docker.url = 'http://docker.devvm'
   blob = JSON.parse(RestClient.get(ARGV[1]))
 
-  env = %W(ACCESS_TOKEN=#{blob['access_token']} BOOTSTRAP_URI=http://certmgr.devvm/agents/bootstrap)
+  env = %W(ACCESS_TOKEN=#{blob['access_token']} MASTER_URI=http://certmgr.devvm)
   container = Docker::Container.create(Cmd: ['run'], Image: 'soteria-agent',  Env: env, CapDrop: ['ALL'], Name: '/soteria-agent')
   container.start
 elsif ARGV[0] == 'run'
-  bootstrap_uri = "#{ENV['BOOTSTRAP_URI']}?token=#{ENV['ACCESS_TOKEN']}"
+  bootstrap_uri = "#{ENV['MASTER_URI']}/agents/bootstrap?token=#{ENV['ACCESS_TOKEN']}"
   bootstrap = JSON.parse(RestClient.get(bootstrap_uri, {format: :json, authorization: "Bearer #{ENV['ACCESS_TOKEN']}"}))
   puts bootstrap.inspect
 

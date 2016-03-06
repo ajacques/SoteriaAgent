@@ -10,7 +10,7 @@ class PollingHTTPDataStream
   def execute
     while true
       puts 'Requesting'
-      json = JSON.parse(get_request(@endpoints['command_stream']))
+      json = JSON.parse(get_request(@endpoints['sync']))
 
       json['services'].each do |service|
         valid = certificate_valid?(service)
@@ -44,6 +44,6 @@ class PollingHTTPDataStream
   end
 
   def get_request(url)
-    RestClient.get(url, {authorization: "Bearer #{@key}"})
+    RestClient.get(ENV['MASTER_URI'] + url, {authorization: "Bearer #{@key}"})
   end
 end
