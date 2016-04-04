@@ -1,0 +1,7 @@
+# Git
+.gitignore
+.git
+
+.idea
+
+Dockerfile
