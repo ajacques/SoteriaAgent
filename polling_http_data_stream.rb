@@ -1,3 +1,4 @@
+# frozen_string_literal: true
 require 'json'
 require 'rest-client'
 
@@ -8,20 +9,12 @@ class PollingHTTPDataStream
   end
 
   def execute
-    while true
+    loop do
       json = JSON.parse(get_request(@endpoints['sync']))
 
       report = {}
       json['services'].each do |service|
-        valid = certificate_valid?(service)
-        cert_report = {}
-        cert_report['changed'] = !valid
-        unless valid
-          chain = get_request(service['url'])
-          save_certificate(service, chain)
-          post_rotation(service)
-        end
-        report[service['id']] = cert_report
+        report[service['id']] = process_certificate_directive(service)
       end
 
       post_request(@endpoints['report'], report)
@@ -33,13 +26,22 @@ class PollingHTTPDataStream
 
   private
 
-  def certificate_valid?(service)
-    if File.exist? service['path']
-      actual = Digest::SHA256.file service['path']
-      service['hash']['value'] == actual.to_s
-    else
-      false
+  def process_certificate_directive(service)
+    valid = certificate_valid?(service)
+    cert_report = {}
+    cert_report['changed'] = !valid
+    unless valid
+      chain = get_request(service['url'])
+      save_certificate(service, chain)
+      post_rotation(service)
     end
+    cert_report
+  end
+
+  def certificate_valid?(service)
+    return false unless File.exist? service['path']
+    actual = Digest::SHA256.file service['path']
+    service['hash']['value'] == actual.to_s
   end
 
   def save_certificate(service, certificate)
@@ -50,24 +52,20 @@ class PollingHTTPDataStream
   end
 
   def post_rotation(service)
-    return unless service.has_key? 'after_action'
+    return unless service.key? 'after_action'
     service['after_action'].each do |action|
       if action['type'] == 'docker'
         container = Docker::Container.get(action['container_name'])
-        if action.has_key? 'signal'
-          container.kill!(Signal: action['signal'])
-        else
-          #container.restart!
-        end
+        container.kill!(Signal: action['signal']) if action.key? 'signal'
       end
     end
   end
 
   def get_request(url)
-    RestClient.get(ENV['MASTER_URI'] + url, {authorization: "Bearer #{@key}"})
+    RestClient.get(ENV['MASTER_URI'] + url, authorization: "Bearer #{@key}")
   end
 
   def post_request(url, body)
-    RestClient.post(ENV['MASTER_URI'] + url, body.to_json, {authorization: "Bearer #{@key}", content_type: :json})
+    RestClient.post(ENV['MASTER_URI'] + url, body.to_json, authorization: "Bearer #{@key}", content_type: :json)
   end
 end
