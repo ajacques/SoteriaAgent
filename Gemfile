@@ -11,5 +11,6 @@ gem 'mqtt'
 
 # Coding quality
 group :development do
+  gem 'rake'
   gem 'rubocop', require: false
 end
