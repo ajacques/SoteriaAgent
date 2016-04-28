@@ -1,6 +1,7 @@
 #!/usr/bin/ruby
 require 'docker'
 require 'rest-client'
+require './agent_container.rb'
 require './web_socket_data_stream'
 require './polling_http_data_stream'
 
@@ -18,12 +19,11 @@ if ARGV[0] == 'register'
     exit -1
   end
   register_url = URI(ARGV[1])
+  master_url = URI("#{register_url.scheme}://#{register_url.host}:#{register_url.port}")
 
   blob = JSON.parse(RestClient.get(register_url.to_s))
 
-  env = %W(ACCESS_TOKEN=#{blob['access_token']} MASTER_URI=#{register_url.scheme}://#{register_url.host})
-  container = Docker::Container.create(Cmd: ['run'], Image: blob['image_name'], Binds: ['/:/host-volume'], Env: env, CapDrop: ['ALL'], Name: '/soteria-agent')
-  container.start
+  AgentContainer.register(access_token: blob['access_token'], master_url: register_url, image_name: blob['image_name'])
 elsif ARGV[0] == 'run'
   bootstrap_uri = "#{ENV['MASTER_URI']}/agents/bootstrap?token=#{ENV['ACCESS_TOKEN']}"
   bootstrap = JSON.parse(RestClient.get(bootstrap_uri, {format: :json, authorization: "Bearer #{ENV['ACCESS_TOKEN']}"}))

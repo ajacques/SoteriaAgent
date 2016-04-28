@@ -9,7 +9,6 @@ class PollingHTTPDataStream
 
   def execute
     while true
-      puts 'Requesting'
       json = JSON.parse(get_request(@endpoints['sync']))
 
       report = {}
