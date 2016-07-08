@@ -1,12 +1,8 @@
 # frozen_string_literal: true
 class AgentContainer
-  def self.register(opts = {})
-    access_token = opts[:access_token]
-    register_url = opts[:register_url]
-    image_name = opts[:image_name]
-    other_containers = opts[:container_names] || []
+  def self.register(access_token:, bootstrap_uri:, image_name:, other_containers: [])
 
-    env = %W(ACCESS_TOKEN=#{access_token} MASTER_URI=#{register_url})
+    env = %W(BOOTSTRAP_URI=#{bootstrap_uri} ACCESS_TOKEN: #{access_token})
     container = Docker::Container.create(Cmd: ['run'], Image: image_name, Binds: ['/:/host-volume'],
                                          Volumes_From: other_containers, Env: env, CapDrop: ['ALL'], Name: '/soteria-agent')
     container.start

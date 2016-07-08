@@ -19,13 +19,12 @@ if ARGV[0] == 'register'
     exit(-1)
   end
   register_url = URI(ARGV[1])
-  # master_url = URI("#{register_url.scheme}://#{register_url.host}:#{register_url.port}")
 
   blob = JSON.parse(RestClient.get(register_url.to_s))
 
-  AgentContainer.register(access_token: blob['access_token'], master_url: register_url, image_name: blob['image_name'])
+  AgentContainer.register(bootstrap_uri: blob['bootstrap_uri'], image_name: blob['image_name'])
 elsif ARGV[0] == 'run'
-  bootstrap_uri = "#{ENV['MASTER_URI']}/agents/bootstrap?token=#{ENV['ACCESS_TOKEN']}"
+  bootstrap_uri = ENV['BOOTSTRAP_URI']
   bootstrap = JSON.parse(RestClient.get(bootstrap_uri, format: :json, authorization: "Bearer #{ENV['ACCESS_TOKEN']}"))
   puts bootstrap.inspect
 

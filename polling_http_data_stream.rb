@@ -45,7 +45,7 @@ class PollingHTTPDataStream
   end
 
   def save_certificate(service, certificate)
-    File.open(service['path'], 'w') do |file|
+    File.open("/host-volume#{service['path']}", 'w') do |file|
       file.write(certificate)
     end
     File.chmod(0600, service['path'])
@@ -62,10 +62,10 @@ class PollingHTTPDataStream
   end
 
   def get_request(url)
-    RestClient.get(ENV['MASTER_URI'] + url, authorization: "Bearer #{@key}")
+    RestClient.get(url, authorization: "Bearer #{@key}")
   end
 
   def post_request(url, body)
-    RestClient.post(ENV['MASTER_URI'] + url, body.to_json, authorization: "Bearer #{@key}", content_type: :json)
+    RestClient.post(url, body.to_json, authorization: "Bearer #{@key}", content_type: :json)
   end
 end
