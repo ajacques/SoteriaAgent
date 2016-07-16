@@ -15,16 +15,16 @@ runners = { http_poll: PollingHTTPDataStream }
 
 if ARGV[0] == 'register'
   if ARGV.size < 2
-    puts 'Not enough arguments. run http://master_uri'
+    puts 'Not enough arguments. run http://master_url'
     exit(-1)
   end
   register_url = URI(ARGV[1])
 
   blob = JSON.parse(RestClient.get(register_url.to_s))
 
-  AgentContainer.register(bootstrap_uri: blob['bootstrap_uri'], image_name: blob['image_name'])
+  AgentContainer.register(access_token: blob['access_token'], bootstrap_url: blob['bootstrap_url'], image_name: blob['image_name'])
 elsif ARGV[0] == 'run'
-  bootstrap_uri = ENV['BOOTSTRAP_URI']
+  bootstrap_uri = ENV['BOOTSTRAP_URL']
   bootstrap = JSON.parse(RestClient.get(bootstrap_uri, format: :json, authorization: "Bearer #{ENV['ACCESS_TOKEN']}"))
   puts bootstrap.inspect
 
