@@ -28,22 +28,32 @@ class PollingHTTPDataStream
 
   def process_certificate_directive(service)
     valid = certificate_valid?(service)
-    cert_report = {}
     unless valid
       chain = get_request(service['url'])
       begin
         save_certificate(service, chain)
         post_rotation(service)
-        cert_report['state'] = :valid
       rescue StandardError => ex
-        cert_report['state'] = :failed
-        cert_report['reason'] = {
-          class: ex.class.name,
-          message: ex.message
-        }
+        return failed_report(ex)
       end
     end
-    cert_report
+    succeeded_report
+  end
+
+  def succeeded_report
+    {
+      state: :valid
+    }
+  end
+
+  def failed_report(error)
+    {
+      state: :failed,
+      reason: {
+        class: error.class.name,
+        message: error.message
+      }
+    }
   end
 
   def certificate_valid?(service)
