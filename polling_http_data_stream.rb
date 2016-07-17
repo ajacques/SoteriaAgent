@@ -60,7 +60,7 @@ class PollingHTTPDataStream
     File.open(qualified_cert_filename(service), 'w') do |file|
       file.write(certificate)
     end
-    File.chmod(0600, service['path'])
+    File.chmod(0o600, service['path'])
   end
 
   def post_rotation(service)
