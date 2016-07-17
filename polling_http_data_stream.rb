@@ -39,13 +39,17 @@ class PollingHTTPDataStream
   end
 
   def certificate_valid?(service)
-    return false unless File.exist? service['path']
-    actual = Digest::SHA256.file service['path']
+    return false unless File.exist? qualified_cert_filename(service)
+    actual = Digest::SHA256.file qualified_cert_filename(service)
     service['hash']['value'] == actual.to_s
   end
 
+  def qualified_cert_filename(service)
+    "/host-volume#{service['path']}"
+  end
+
   def save_certificate(service, certificate)
-    File.open("/host-volume#{service['path']}", 'w') do |file|
+    File.open(qualified_cert_filename(service), 'w') do |file|
       file.write(certificate)
     end
     File.chmod(0600, service['path'])
