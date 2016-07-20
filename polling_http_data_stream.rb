@@ -67,11 +67,11 @@ class PollingHTTPDataStream
   end
 
   def save_certificate(service, certificate)
-    file = qualified_cert_filename(service)
-    File.open(file, 'w') do |file|
+    file_name = qualified_cert_filename(service)
+    File.open(file_name, 'w') do |file|
       file.write(certificate)
     end
-    File.chmod(0o600, file)
+    File.chmod(0o600, file_name)
   end
 
   def post_rotation(service)
