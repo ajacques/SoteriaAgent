@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 require 'json'
 require 'rest-client'
+require_relative 'agent'
 
 class PollingHTTPDataStream
   def initialize(bootstrap_info)
@@ -68,7 +69,7 @@ class PollingHTTPDataStream
   end
 
   def qualified_cert_filename(service)
-    "/host-volume#{service['path']}"
+    LocalHost.path(service['path'])
   end
 
   def save_certificate(service, certificate)

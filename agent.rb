@@ -4,6 +4,7 @@ require 'docker'
 require 'rest-client'
 require './agent_container.rb'
 require './polling_http_data_stream'
+require './agent'
 
 if ARGV.empty?
   puts 'Not enough arguments'
@@ -25,7 +26,7 @@ if ARGV[0] == 'register'
   AgentContainer.register(access_token: blob['access_token'], bootstrap_url: blob['bootstrap_url'], image_name: blob['image_name'])
 elsif ARGV[0] == 'run'
   bootstrap_uri = ENV['BOOTSTRAP_URL']
-  bootstrap = JSON.parse(RestClient.get(bootstrap_uri, format: :json, authorization: "Bearer #{ENV['ACCESS_TOKEN']}"))
+  bootstrap = JSON.parse(RestClient.post(bootstrap_uri, { hostname: LocalHost.name }, format: :json, authorization: "Bearer #{ENV['ACCESS_TOKEN']}"))
   puts bootstrap.inspect
 
   class_type = runners[bootstrap['transport'].to_sym]
