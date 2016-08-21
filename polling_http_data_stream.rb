@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 require 'json'
 require 'rest-client'
-require_relative 'agent'
+require './local_host'
 
 class PollingHTTPDataStream
   def initialize(bootstrap_info)

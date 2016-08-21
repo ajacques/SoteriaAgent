@@ -4,7 +4,7 @@ require 'docker'
 require 'rest-client'
 require './agent_container.rb'
 require './polling_http_data_stream'
-require './agent'
+require './local_host'
 
 if ARGV.empty?
   puts 'Not enough arguments'
