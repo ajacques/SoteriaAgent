@@ -10,4 +10,4 @@ RUN /usr/bin/apt-get update \
   && /usr/bin/apt-get -qy autoremove \
   && /bin/rm -rf /var/lib/gems/2.3.0/cache /var/cache/* /var/lib/apt/lists/* \
   && find . -type f -print -exec chmod 444 {} \; && find . -type d -print -exec chmod 555 {} \;
-ENTRYPOINT ["/usr/bin/ruby", "/ruby-app/agent.rb"]
+ENTRYPOINT ["/usr/bin/ruby", "/rails-app/bin/bundle", "exec", "/ruby-app/agent.rb"]

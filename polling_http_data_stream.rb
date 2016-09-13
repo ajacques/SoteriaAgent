@@ -1,5 +1,6 @@
 # frozen_string_literal: true
 require 'json'
+require 'docker'
 require 'rest-client'
 require './local_host'
 

@@ -1,7 +1,6 @@
 #!/usr/bin/ruby
 # frozen_string_literal: true
 require 'docker'
-require 'rest-client'
 require './agent_container.rb'
 require './polling_http_data_stream'
 require './local_host'
