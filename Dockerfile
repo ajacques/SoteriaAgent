@@ -9,5 +9,6 @@ RUN /usr/bin/apt-get update \
   && /usr/bin/apt-get remove -qy ruby-dev make g++ \
   && /usr/bin/apt-get -qy autoremove \
   && /bin/rm -rf /var/lib/gems/2.3.0/cache /var/cache/* /var/lib/apt/lists/* \
-  && find . -type f -print -exec chmod 444 {} \; && find . -type d -print -exec chmod 555 {} \;
-ENTRYPOINT ["/usr/bin/ruby", "/rails-app/bin/bundle", "exec", "/ruby-app/agent.rb"]
+  && find . -type f -print -exec chmod 444 {} \; && find . -type d -print -exec chmod 555 {} \; \
+  && chmod +x agent.rb
+ENTRYPOINT ["/usr/bin/ruby", "/usr/local/bin/bundle", "exec", "/usr/bin/ruby", "/ruby-app/agent.rb"]
