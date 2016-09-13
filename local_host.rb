@@ -6,6 +6,6 @@ class LocalHost
   end
 
   def self.name
-    File.read(path('/etc/hostname'))
+    File.read(path('/etc/hostname')).strip
   end
 end

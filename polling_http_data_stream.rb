@@ -48,12 +48,14 @@ class PollingHTTPDataStream
 
   def succeeded_report
     {
+      hostname: LocalHost.name,
       state: :valid
     }
   end
 
   def failed_report(error)
     {
+      hostname: LocalHost.name,
       state: :failed,
       reason: {
         class: error.class.name,
