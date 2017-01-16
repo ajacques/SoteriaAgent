@@ -14,9 +14,13 @@ class PollingHTTPDataStream
     loop do
       json = JSON.parse(get_request(@endpoints['sync']))
 
-      report = {}
+      service_reports = {}
+      report = {
+        hostname: LocalHost.name,
+        services: service_reports
+      }
       json['services'].each do |service|
-        report[service['id']] = process_certificate_directive(service)
+        service_reports[service['id']] = process_certificate_directive(service)
       end
 
       post_request(@endpoints['report'], report)
@@ -49,14 +53,12 @@ class PollingHTTPDataStream
 
   def succeeded_report
     {
-      hostname: LocalHost.name,
       state: :valid
     }
   end
 
   def failed_report(error)
     {
-      hostname: LocalHost.name,
       state: :failed,
       reason: {
         class: error.class.name,
