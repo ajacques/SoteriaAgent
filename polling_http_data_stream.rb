@@ -14,14 +14,7 @@ class PollingHTTPDataStream
     loop do
       json = JSON.parse(get_request(@endpoints['sync']))
 
-      service_reports = {}
-      report = {
-        hostname: LocalHost.name,
-        services: service_reports
-      }
-      json['services'].each do |service|
-        service_reports[service['id']] = process_certificate_directive(service)
-      end
+      report = process_services(json['services'])
 
       post_request(@endpoints['report'], report)
 
@@ -31,6 +24,18 @@ class PollingHTTPDataStream
   end
 
   private
+
+  def process_services(services)
+    service_reports = {}
+    report = {
+      hostname: LocalHost.name,
+      services: service_reports
+    }
+    services.each do |service|
+      service_reports[service['id']] = process_certificate_directive(service)
+    end
+    report
+  end
 
   def process_certificate_directive(service)
     valid = certificate_valid?(service)
