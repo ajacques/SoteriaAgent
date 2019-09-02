@@ -27,9 +27,9 @@ class LocalFileAgent
     begin
       save_certificate(service, chain)
       post_rotation(service)
-    rescue StandardError => ex
-      puts ex
-      failed_report(ex)
+    rescue StandardError => e
+      puts e
+      failed_report(e)
     end
   end
 
@@ -70,6 +70,7 @@ class LocalFileAgent
 
   def post_rotation(service)
     return unless service.key? 'after_action'
+
     service['after_action'].each do |action|
       if action['type'] == 'docker'
         container = Docker::Container.get(action['container_name'])
