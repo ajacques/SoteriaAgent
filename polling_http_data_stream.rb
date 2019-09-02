@@ -1,110 +1,27 @@
 # frozen_string_literal: true
+
 require 'json'
 require 'docker'
-require 'rest-client'
 require './local_host'
+require './http_req'
+require './local_file_agent'
 
 class PollingHTTPDataStream
   def initialize(bootstrap_info)
     @endpoints = bootstrap_info['endpoints']
-    @key = ENV['ACCESS_TOKEN']
   end
 
   def execute
+    agent = LocalFileAgent.new
     loop do
-      json = JSON.parse(get_request(@endpoints['sync']))
+      json = HttpApi.get_json(@endpoints['sync'])
 
-      report = process_services(json['services'])
+      report = agent.process_services(json['services'])
 
-      post_request(@endpoints['report'], report)
+      HttpApi.post_request(@endpoints['report'], report)
 
       refresh_rate = json['continuation']['refresh']
       Kernel.sleep refresh_rate.to_i
     end
-  end
-
-  private
-
-  def process_services(services)
-    service_reports = {}
-    report = {
-      hostname: LocalHost.name,
-      services: service_reports
-    }
-    services.each do |service|
-      service_reports[service['id']] = process_certificate_directive(service)
-    end
-    report
-  end
-
-  def process_certificate_directive(service)
-    valid = certificate_valid?(service)
-    if valid
-      succeeded_report
-    else
-      deploy_certificate(service)
-    end
-  end
-
-  def deploy_certificate(service)
-    chain = get_request(service['url'])
-    begin
-      save_certificate(service, chain)
-      post_rotation(service)
-    rescue StandardError => ex
-      failed_report(ex)
-    end
-  end
-
-  def succeeded_report
-    {
-      state: :valid
-    }
-  end
-
-  def failed_report(error)
-    {
-      state: :failed,
-      reason: {
-        class: error.class.name,
-        message: error.message
-      }
-    }
-  end
-
-  def certificate_valid?(service)
-    return false unless File.exist? qualified_cert_filename(service)
-    actual = Digest::SHA256.file qualified_cert_filename(service)
-    service['hash']['value'] == actual.to_s
-  end
-
-  def qualified_cert_filename(service)
-    LocalHost.path(service['path'])
-  end
-
-  def save_certificate(service, certificate)
-    file_name = qualified_cert_filename(service)
-    File.open(file_name, 'w') do |file|
-      file.write(certificate)
-    end
-    File.chmod(0o600, file_name)
-  end
-
-  def post_rotation(service)
-    return unless service.key? 'after_action'
-    service['after_action'].each do |action|
-      if action['type'] == 'docker'
-        container = Docker::Container.get(action['container_name'])
-        container.kill!(Signal: action['signal']) if action.key? 'signal'
-      end
-    end
-  end
-
-  def get_request(url)
-    RestClient.get(url, authorization: "Bearer #{@key}")
-  end
-
-  def post_request(url, body)
-    RestClient.post(url, body.to_json, authorization: "Bearer #{@key}", content_type: :json)
   end
 end

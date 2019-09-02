@@ -1,9 +1,11 @@
 #!/usr/bin/ruby
 # frozen_string_literal: true
+
 require 'docker'
 require './agent_container.rb'
 require './polling_http_data_stream'
 require './local_host'
+require './http_req'
 
 if ARGV.empty?
   puts 'Not enough arguments'
@@ -20,12 +22,12 @@ if ARGV[0] == 'register'
   end
   register_url = URI(ARGV[1])
 
-  blob = JSON.parse(RestClient.get(register_url.to_s))
+  blob = HttpApi.get_json(register_url)
 
   AgentContainer.register(access_token: blob['access_token'], bootstrap_url: blob['bootstrap_url'], image_name: blob['image_name'])
 elsif ARGV[0] == 'run'
   bootstrap_uri = ENV['BOOTSTRAP_URL']
-  bootstrap = JSON.parse(RestClient.post(bootstrap_uri, { hostname: LocalHost.name }, format: :json, authorization: "Bearer #{ENV['ACCESS_TOKEN']}"))
+  bootstrap = HttpApi.post_json(bootstrap_uri, hostname: LocalHost.name)
   puts bootstrap.inspect
 
   class_type = runners[bootstrap['transport'].to_sym]
